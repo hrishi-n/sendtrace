@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: sendtrace
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/sendtrace}
+    username: ${DB_USER:sendtrace}
+    password: ${DB_PASSWORD:sendtrace}
+    hikari:
+      maximum-pool-size: 16
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: sendtrace
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+
+sendtrace:
+  # fixed tenant used when a request omits the X-Tenant-Id header
+  default-tenant: "00000000-0000-0000-0000-000000000000"
+  outbox:
+    poll-interval-ms: 2000
+    batch-size: 20
+    queue-url: ${SQS_QUEUE_URL:http://localhost:4566/000000000000/sendtrace-outbound}
+
+aws:
+  region: ${AWS_REGION:us-east-1}
+  # set for LocalStack; leave unset to talk to real SQS
+  sqs-endpoint: ${AWS_SQS_ENDPOINT:http://localhost:4566}
